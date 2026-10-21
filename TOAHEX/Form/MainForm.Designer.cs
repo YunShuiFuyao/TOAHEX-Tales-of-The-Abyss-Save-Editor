@@ -182,7 +182,7 @@ namespace TOAHEX
             this.MainMenuStrip = this.menuStrip;
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = LangText("TOAHEX v1.1 - Tales of the Abyss Save Editor", "TOAHEX v1.1 - Tales of the Abyss Save Editor");
+            this.Text = LangText("TOAHEX v1.1.5 - Tales of the Abyss Save Editor", "TOAHEX v1.1.5 - Tales of the Abyss Save Editor");
             this.Icon = LoadAppIcon();
             this.AllowDrop = true;
             this.KeyPreview = true;

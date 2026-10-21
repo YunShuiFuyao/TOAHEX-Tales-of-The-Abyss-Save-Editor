@@ -46,7 +46,7 @@ namespace TOAHEX
 
         private void RefreshAllUI()
         {
-            this.Text = LangText("TOAHEX v1.1 - Tales of the Abyss Save Editor", "TOAHEX v1.1 - Tales of the Abyss Save Editor");
+            this.Text = LangText("TOAHEX v1.1.5 - Tales of the Abyss Save Editor", "TOAHEX v1.1.5 - Tales of the Abyss Save Editor");
             menuFile.Text = LangText("文件", "ファイル");
             menuFileOpen.Text = LangText("打开", "開く");
             menuFileSave.Text = LangText("保存", "保存");

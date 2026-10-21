@@ -344,12 +344,17 @@ namespace TOAHEX
         public const int TOASYS_CHAR_KILLS = 0x8C;     // TOASYS：0x8C + 4*(角色ID-1)，跨周目累计杀敌数
         public const int CHAR_KILL_COUNT = 7;
 
-        // 脚本变量区（file 0x2BA1 起 32KB=4095 个 8 字节条目 [tag u32][value u32]，sub_34ACB4 分配 dword_53A3B8）。
-        // 赌场实测（2026-08-19，用户以 10Grade↔1筹码 兑换制造差分，五档验证）：
+        // 脚本变量区（file 0x2BA1 起 32KB，4096 个 8 字节条目，sub_34ACB4 分配 dword_53A3B8）。
+        // ⚠ 条目布局（2026-10-07 四档+PS2 交叉实测定案）：
+        //   8B 条目内 **[u32 值 @+0] [u16 保留 @+4] [u16 tag=0x0200 @+6]**，
+        //   即 var N 的「值」= SCRIPT_VARS + N*8（+0）；tag 是条目 +4 的 u16。
+        //   旧实现误按 [tag][value] 用 +4 取值 → 读到 tag(0x0200=512)/垃圾，写 +4 还会破坏邻近条目 tag。
+        //   实证：3DS TOA_000..003 的 var271 值 @0x341D = 169；var136 @0x2FE5 = 事件ID。
+        // 赌场实测：
         //   var#271 = 赌场筹码（游戏内赌场菜单显示的持有数）
-        //   var#773 = 赌场 Grade 余额（游戏内赌场显示的 Grade；兑换只扣此变量，0xB080/0xB088 不变）
+        //   var#773 = 赌场 Grade 余额缓存（源头是 file 0xABA4 定点数；兑换只扣此变量，0xB080/0xB088 不变）
         //   var#774 = 兑换相关计数器（语义未完全确认，只读展示）
-        public const int SCRIPT_VARS = 0x2BA5;  // 修正：实际起始 0x2BA5（LoadToaSaveBuffer body+10637），非 0x2BA1
+        public const int SCRIPT_VARS = 0x2BA5;  // var N 的「值」字段基址（条目 tag 起于 0x2BA1）
         public const int SCRIPT_VAR_CHIPS = 271;
         public const int SCRIPT_VAR_GRADE = 773;
         public const int SCRIPT_VAR_EXCHANGE = 774;
@@ -364,7 +369,7 @@ namespace TOAHEX
         // 脚本变量 var[136] = 当前事件ID（event_id），格式 XCCYYY0（X=篇1-4,CC=章节,YYY=事件序,末位0）
         // 游戏读档后 sub_2EB174(event_id) 调度执行对应剧情脚本
         public const int SCRIPT_VAR_EVENT_ID = 136;        // var 索引
-        public const int BODY_EVENT_ID = 0x2FE5;           // u32 event_id（= SCRIPT_VARS + 136*8 的 tag 字段）
+        public const int BODY_EVENT_ID = 0x2FE5;           // u32 event_id（= SCRIPT_VARS + 136*8，var136 的「值」字段，+0）
         // 全局 flag 位图（off_4F0500+116，file 0x218 起）
         public const int FLAG_BITMAP = 0x218;              // 位图基址，flag N = [N/8] 的 bit(N%8)
         public const int FLAG_BITMAP_SIZE = 768;           // 0x218~0x518，共 flag 0~6143

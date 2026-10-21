@@ -71,10 +71,12 @@ namespace TOAHEX
         }
 
         // 赌场 Grade 余额整数缓存 = 脚本变量 #773（进赌场时被 0xABA4 重算覆盖，非源头）
+        // ⚠ 变量条目 8 字节 = [u32 值 @+0][u16 保留][u16 tag=0x0200 @+4]，**值在 +0**。
+        //   2026-10-07 修正：旧代码用 +4（读到 tag 0x0200=512），且写 +4 会破坏邻近变量的 tag。
         public uint CasinoGrade
         {
-            get => ReadU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8 + 4);
-            set => WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8 + 4, value);
+            get => ReadU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8);
+            set => WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8, value);
         }
 
         // 0xABA4 赌场 Grade 余额定点数（×100，含 2 位小数）。游戏显示 = floor(/100)，唯一源头。
@@ -95,13 +97,14 @@ namespace TOAHEX
         {
             uint frac = ReadU32(SaveOffsets.BODY_GRADE_CASINO) % 100;
             WriteU32(SaveOffsets.BODY_GRADE_CASINO, grade * 100 + frac);
-            WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8 + 4, grade);
+            // var#773 值在条目 +0（不是 +4；+4 是 tag 字段）
+            WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8, grade);
         }
 
-        // 脚本变量类型 tag（0x200=int 有效；其他=脚本复用后的垃圾值，勿信）
+        // 脚本变量类型 tag（u16 @ 条目+4；0x0200=有效 int，其他=未初始化/脚本复用后的垃圾值）
         public uint ReadScriptVarTag(int index)
         {
-            return ReadU32(SaveOffsets.SCRIPT_VARS + index * 8);
+            return ReadU16(SaveOffsets.SCRIPT_VARS + index * 8 + 4);
         }
 
         // GRADE 商店效果位图（文件 0xABA8；bit0..27 = 官方 28 项效果，bit28 游戏未用。
@@ -127,11 +130,12 @@ namespace TOAHEX
             }
         }
 
-        // 赌场筹码 = 脚本变量 #271（赌场菜单显示的持有筹码数）
+        // 赌场筹码 = 脚本变量 #271（赌场菜单显示的持有筹码数），值在条目 +0
+        // 实测 TOA_000..003 均为 169（+4 读到的是 tag 区垃圾 66048）。2026-10-07 修正。
         public uint CasinoChips
         {
-            get => ReadU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_CHIPS * 8 + 4);
-            set => WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_CHIPS * 8 + 4, value);
+            get => ReadU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_CHIPS * 8);
+            set => WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_CHIPS * 8, value);
         }
 
         public uint PartyCount
