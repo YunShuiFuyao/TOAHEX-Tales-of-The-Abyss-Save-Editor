@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -31,6 +31,8 @@ namespace TOAHEX
             this.menuLanguage = new ToolStripMenuItem();
             this.menuLangCN = new ToolStripMenuItem();
             this.menuLangJP = new ToolStripMenuItem();
+            this.menuLangEN = new ToolStripMenuItem();
+            this.menuLangReload = new ToolStripMenuItem();
             this.menuHelp = new ToolStripMenuItem();
             this.menuHelpAbout = new ToolStripMenuItem();
             this.menuTools = new ToolStripMenuItem();
@@ -101,7 +103,18 @@ namespace TOAHEX
             this.menuLangJP.Text = LangText("日文", "日本語");
             this.menuLangJP.Click += new System.EventHandler(this.menuLangJP_Click);
 
-            this.menuLanguage.DropDownItems.AddRange(new ToolStripItem[] { this.menuLangCN, this.menuLangJP });
+            this.menuLangEN.Name = "menuLangEN";
+            this.menuLangEN.Size = new Size(160, 22);
+            this.menuLangEN.Text = LangText("英文", "英語");
+            this.menuLangEN.Click += new System.EventHandler(this.menuLangEN_Click);
+
+            this.menuLangReload.Name = "menuLangReload";
+            this.menuLangReload.Size = new Size(160, 22);
+            this.menuLangReload.Text = LangText("重新加载词典", "辞書を再読み込み");
+            this.menuLangReload.Click += new System.EventHandler(this.menuLangReload_Click);
+
+            this.menuLanguage.DropDownItems.AddRange(new ToolStripItem[] {
+                this.menuLangCN, this.menuLangJP, this.menuLangEN, this.menuLangReload });
 
             this.menuHelp.Name = "menuHelp";
             this.menuHelp.Size = new Size(37, 21);
@@ -268,7 +281,7 @@ namespace TOAHEX
             ey += 28;
 
             var lblPlayTime = new Label();
-            lblPlayTime.Text = LangText("游戏时间(帧):", "ゲーム時間(フレーム):");
+            lblPlayTime.Text = LangText("游戏时间(帧):", "ゲーム時間:");
             lblPlayTime.Location = new Point(10, ey + 2);
             lblPlayTime.Size = new Size(80, 18);
             grpEdit.Controls.Add(lblPlayTime);
@@ -388,51 +401,51 @@ namespace TOAHEX
             grpInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
             var lblVerTitle = new Label();
-            lblVerTitle.Text = LangText("游戏版本:", "ゲームバージョン:");
+            lblVerTitle.Text = LangText("游戏版本:", "バージョン:");
             lblVerTitle.Location = new Point(10, 24);
-            lblVerTitle.Size = new Size(60, 18);
+            lblVerTitle.Size = new Size(85, 18);
             grpInfo.Controls.Add(lblVerTitle);
 
             this.lblVersion = new Label();
             this.lblVersion.Text = "-";
-            this.lblVersion.Location = new Point(75, 24);
-            this.lblVersion.Size = new Size(220, 18);
+            this.lblVersion.Location = new Point(100, 24);
+            this.lblVersion.Size = new Size(200, 18);
             grpInfo.Controls.Add(this.lblVersion);
 
             var lblDiffTitle = new Label();
             lblDiffTitle.Text = LangText("难度:", "難易度:");
             lblDiffTitle.Location = new Point(10, 48);
-            lblDiffTitle.Size = new Size(60, 18);
+            lblDiffTitle.Size = new Size(85, 18);
             grpInfo.Controls.Add(lblDiffTitle);
 
             this.lblDifficulty = new Label();
             this.lblDifficulty.Text = "-";
-            this.lblDifficulty.Location = new Point(75, 48);
-            this.lblDifficulty.Size = new Size(220, 18);
+            this.lblDifficulty.Location = new Point(100, 48);
+            this.lblDifficulty.Size = new Size(200, 18);
             grpInfo.Controls.Add(this.lblDifficulty);
 
             var lblPartyTitle = new Label();
             lblPartyTitle.Text = LangText("队伍人数:", "パーティ人数:");
             lblPartyTitle.Location = new Point(10, 72);
-            lblPartyTitle.Size = new Size(60, 18);
+            lblPartyTitle.Size = new Size(85, 18);
             grpInfo.Controls.Add(lblPartyTitle);
 
             this.lblPartyCount = new Label();
             this.lblPartyCount.Text = "-";
-            this.lblPartyCount.Location = new Point(75, 72);
-            this.lblPartyCount.Size = new Size(220, 18);
+            this.lblPartyCount.Location = new Point(100, 72);
+            this.lblPartyCount.Size = new Size(200, 18);
             grpInfo.Controls.Add(this.lblPartyCount);
 
             var lblLocTitle = new Label();
             lblLocTitle.Text = LangText("当前位置:", "現在地:");
             lblLocTitle.Location = new Point(10, 96);
-            lblLocTitle.Size = new Size(60, 18);
+            lblLocTitle.Size = new Size(85, 18);
             grpInfo.Controls.Add(lblLocTitle);
 
             this.lblLocation = new Label();
             this.lblLocation.Text = "-";
-            this.lblLocation.Location = new Point(75, 96);
-            this.lblLocation.Size = new Size(240, 18);
+            this.lblLocation.Location = new Point(100, 96);
+            this.lblLocation.Size = new Size(200, 18);
             grpInfo.Controls.Add(this.lblLocation);
 
             this.tabGlobal.Controls.Add(grpInfo);
@@ -450,12 +463,12 @@ namespace TOAHEX
                 var lblSlot = new Label();
                 lblSlot.Text = string.Format(LangText("位置{0}:", "枠{0}:"), i + 1);
                 lblSlot.Location = new Point(10, 18 + i * 17);
-                lblSlot.Size = new Size(40, 16);
+                lblSlot.Size = new Size(52, 16);
                 grpParty.Controls.Add(lblSlot);
 
                 this.cmbPartySlot[i] = new ComboBox();
-                this.cmbPartySlot[i].Location = new Point(52, 16 + i * 17);
-                this.cmbPartySlot[i].Size = new Size(120, 18);
+                this.cmbPartySlot[i].Location = new Point(64, 16 + i * 17);
+                this.cmbPartySlot[i].Size = new Size(108, 18);
                 this.cmbPartySlot[i].DropDownStyle = ComboBoxStyle.DropDownList;
                 this.cmbPartySlot[i].Items.AddRange(partyCharNames);
                 this.cmbPartySlot[i].SelectedIndexChanged += new System.EventHandler(this.cmbPartySlot_SelectedIndexChanged);
@@ -466,8 +479,8 @@ namespace TOAHEX
             // 位于原难度下拉位置；难度已移至"可编辑数据"组
             var lblLeader = new Label();
             lblLeader.Text = LangText("领队:", "リーダー:");
-            lblLeader.Location = new Point(200, 46);
-            lblLeader.Size = new Size(36, 18);
+            lblLeader.Location = new Point(178, 46);
+            lblLeader.Size = new Size(60, 18);
             grpParty.Controls.Add(lblLeader);
 
             this.cmbLeader = new ComboBox();
@@ -955,7 +968,7 @@ namespace TOAHEX
             this.tabFSChamber.UseVisualStyleBackColor = true;
 
             var lblFSChar = new Label();
-            lblFSChar.Text = LangText("选择角色:", "キャラ選択:");
+            lblFSChar.Text = LangText("选择角色:", "キャラ:");
             lblFSChar.Location = new Point(12, 10);
             lblFSChar.Size = new Size(70, 18);
             this.tabFSChamber.Controls.Add(lblFSChar);
@@ -1004,22 +1017,22 @@ namespace TOAHEX
             var grpMax = new GroupBox();
             grpMax.Text = LangText("谱石最大值", "FSチャンバー最大値");
             grpMax.Location = new Point(8, 422);
-            grpMax.Size = new Size(540, 55);
+            grpMax.Size = new Size(540, 64);
             this.numFSChamberMax = new NumericUpDown[4];
             string[] maxLabels = { LangText("赤", "赤"), LangText("青", "青"), LangText("緑", "緑"), LangText("黄", "黄") };
             for (int i = 0; i < 4; i++)
             {
                 var lbl = new Label();
                 lbl.Text = maxLabels[i];
-                lbl.Location = new Point(12 + i * 130, 14);
-                lbl.Size = new Size(25, 18);
+                lbl.Location = new Point(12 + i * 130, 24);
+                lbl.Size = new Size(45, 18);
                 grpMax.Controls.Add(lbl);
 
                 this.numFSChamberMax[i] = new NumericUpDown();
                 this.numFSChamberMax[i].Minimum = 0;
                 this.numFSChamberMax[i].Maximum = 255;
                 this.numFSChamberMax[i].Size = new Size(70, 20);
-                this.numFSChamberMax[i].Location = new Point(38 + i * 130, 12);
+                this.numFSChamberMax[i].Location = new Point(60 + i * 130, 22);
                 this.numFSChamberMax[i].Tag = i;
                 this.numFSChamberMax[i].ValueChanged += new System.EventHandler(this.numFSChamberMax_ValueChanged);
                 grpMax.Controls.Add(this.numFSChamberMax[i]);
@@ -1065,7 +1078,8 @@ namespace TOAHEX
             var allCooking = CookingDatabase.GetAll();
             foreach (var item in allCooking)
             {
-                this.clbCooking.Items.Add(string.Format("{0:D2}: {1} ({2})", item.id, item.cn, item.jp));
+                string ckName = CookingDatabase.GetName(item.id);
+                this.clbCooking.Items.Add(string.Format("{0:D2}: {1}", item.id, ckName));
             }
             this.tabCooking.Controls.Add(this.clbCooking);
 
@@ -1092,7 +1106,7 @@ namespace TOAHEX
             var lblCookingChar = new Label();
             lblCookingChar.Text = LangText("角色:", "キャラ:");
             lblCookingChar.Location = new Point(342, 35);
-            lblCookingChar.Size = new Size(40, 18);
+            lblCookingChar.Size = new Size(46, 18);
             this.tabCooking.Controls.Add(lblCookingChar);
 
             this.cmbCookingChar = new ComboBox();
@@ -1114,15 +1128,15 @@ namespace TOAHEX
 
                 this.lblCookingMasteryName[i] = new Label();
                 this.lblCookingMasteryName[i].Text = CookingDatabase.GetName(i);
-                this.lblCookingMasteryName[i].Size = new Size(80, 20);
+                this.lblCookingMasteryName[i].Size = new Size(90, 20);
                 this.lblCookingMasteryName[i].Location = new Point(342 + col * 210, 65 + row * 24);
                 this.tabCooking.Controls.Add(this.lblCookingMasteryName[i]);
 
                 this.numCookingMastery[i] = new NumericUpDown();
                 this.numCookingMastery[i].Minimum = 0;
                 this.numCookingMastery[i].Maximum = 255;
-                this.numCookingMastery[i].Size = new Size(80, 20);
-                this.numCookingMastery[i].Location = new Point(425 + col * 210, 63 + row * 24);
+                this.numCookingMastery[i].Size = new Size(72, 20);
+                this.numCookingMastery[i].Location = new Point(435 + col * 210, 63 + row * 24);
                 this.numCookingMastery[i].Tag = i;
                 this.numCookingMastery[i].ValueChanged += new System.EventHandler(this.numCookingMastery_ValueChanged);
                 this.tabCooking.Controls.Add(this.numCookingMastery[i]);
@@ -1130,7 +1144,7 @@ namespace TOAHEX
                 this.lblCookingMasteryStar[i] = new Label();
                 this.lblCookingMasteryStar[i].Text = "⭐";
                 this.lblCookingMasteryStar[i].Size = new Size(40, 20);
-                this.lblCookingMasteryStar[i].Location = new Point(508 + col * 210, 65 + row * 24);
+                this.lblCookingMasteryStar[i].Location = new Point(512 + col * 210, 65 + row * 24);
                 this.tabCooking.Controls.Add(this.lblCookingMasteryStar[i]);
             }
         }
@@ -1173,7 +1187,7 @@ namespace TOAHEX
             sy += 28;
             this.numToasysGald = AddNumericRow(grpBase, LangText("最大持有Gald:", "最大所持ガルド:"), 12, ref sy, 0, 99999999);
             this.numToasysGald.ValueChanged += new System.EventHandler(this.numToasysGald_ValueChanged);
-            this.numToasysPlaytime = AddNumericRow(grpBase, LangText("最长游戏时间(帧):", "最長ゲーム時間(フレーム):"), 12, ref sy, 0, 4294967295);
+            this.numToasysPlaytime = AddNumericRow(grpBase, LangText("最长游戏时间(帧):", "最長ゲーム時間:"), 12, ref sy, 0, 4294967295);
             this.numToasysPlaytime.ValueChanged += new System.EventHandler(this.numToasysPlaytime_ValueChanged);
             this.numToasysGaldSpent = AddNumericRow(grpBase, LangText("累计使用Gald:", "累計使用ガルド:"), 12, ref sy, 0, 4294967295);
             this.numToasysGaldSpent.ValueChanged += new System.EventHandler(this.numToasysGaldSpent_ValueChanged);
@@ -1209,7 +1223,7 @@ namespace TOAHEX
             var grpClear = new GroupBox();
             grpClear.Text = LangText("通关内容", "クリア特典");
             grpClear.Location = new Point(12, 224);
-            grpClear.Size = new Size(366, 130);
+            grpClear.Size = new Size(366, 146);
             this.tabSystem.Controls.Add(grpClear);
 
             this.chkSoundTest = new CheckBox();
@@ -1229,7 +1243,7 @@ namespace TOAHEX
             var lblClearHint = new Label();
             lblClearHint.Text = LangText("通关后菜单由通关次数驱动（≥1 出现）；收集累计含音效曲目等（128B 位图全开）。\nGrade商店购入项由脚本flag承载，不在此编辑。", "クリアメニューはクリア回数で解放。コレクションは128Bビットマップ。\nグレードショップはスクリプトフラグのため編集不可。");
             lblClearHint.Location = new Point(12, 78);
-            lblClearHint.Size = new Size(344, 44);
+            lblClearHint.Size = new Size(344, 60);
             lblClearHint.ForeColor = SystemColors.GrayText;
             grpClear.Controls.Add(lblClearHint);
 
@@ -1246,7 +1260,7 @@ namespace TOAHEX
             for (int i = 0; i < 6; i++)
             {
                 var lblChar = new Label();
-                lblChar.Text = usageNames[i] + ":";
+                lblChar.Text = usageNames[i];
                 lblChar.Location = new Point(12, 22 + i * 20);
                 lblChar.Size = new Size(64, 16);
                 grpUsage.Controls.Add(lblChar);
@@ -1289,7 +1303,7 @@ namespace TOAHEX
             for (int i = 0; i < 7; i++)
             {
                 var lblChar = new Label();
-                lblChar.Text = killNames[i] + ":";
+                lblChar.Text = killNames[i];
                 lblChar.Location = new Point(12, 22 + i * 20);
                 lblChar.Size = new Size(64, 16);
                 grpKills.Controls.Add(lblChar);
@@ -1323,7 +1337,7 @@ namespace TOAHEX
             this.tabItems.UseVisualStyleBackColor = true;
 
             var lblCat = new Label();
-            lblCat.Text = LangText("类别筛选:", "カテゴリ絞込:");
+            lblCat.Text = LangText("类别筛选:", "カテゴリ:");
             lblCat.Location = new Point(12, 10);
             lblCat.Size = new Size(70, 16);
             this.tabItems.Controls.Add(lblCat);
@@ -1409,7 +1423,8 @@ namespace TOAHEX
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
 
         #endregion
@@ -1424,6 +1439,8 @@ namespace TOAHEX
         private ToolStripMenuItem menuLanguage;
         private ToolStripMenuItem menuLangCN;
         private ToolStripMenuItem menuLangJP;
+        private ToolStripMenuItem menuLangEN;
+        private ToolStripMenuItem menuLangReload;
         private ToolStripMenuItem menuHelp;
         private ToolStripMenuItem menuHelpAbout;
         private ToolStripMenuItem menuTools;
@@ -1682,7 +1699,7 @@ namespace TOAHEX
 
             // === 缪能力（右侧，纵向排列，双击切换；超振动已隐藏） ===
             var grpAbility = new GroupBox();
-            grpAbility.Text = LangText("缪能力（双击切换档位）", "ミュウ能力（ダブルクリックで段階切替）");
+            grpAbility.Text = LangText("缪能力（双击切换档位）", "ミュウ能力（ダブルクリック）");
             grpAbility.Location = new Point(516, 8);
             grpAbility.Size = new Size(236, 82);
             this.tabStoryJump.Controls.Add(grpAbility);
@@ -1787,7 +1804,7 @@ namespace TOAHEX
                 {
                     var ch = StoryJumpDatabase.GetChapter(chNum);
                     if (ch != null)
-                        this.cmbStoryChapter.Items.Add(string.Format("{0} ({1}分支)", ch.chapter_name, ch.menu_branch_count));
+                        this.cmbStoryChapter.Items.Add(string.Format(Lang.T("{0} ({1}分支)"), ch.DisplayChapter, ch.menu_branch_count));
                 }
                 if (this.cmbStoryChapter.Items.Count > 0)
                     this.cmbStoryChapter.SelectedIndex = 0;
@@ -1845,36 +1862,37 @@ namespace TOAHEX
             // ---- 效果开关（29 复选框 = bit0..27 官方 + bit28 游戏未用）----
             string[,] gradeEffects = new string[,]
             {
-                { LangText("OL槽增加(+50%)", "オーバーリミッツ値増加"), "450" },
-                { LangText("游戏时间继承", "プレイ時間引き継ぎ"), "10" },
-                { LangText("道具持有上限20个", "アイテム所持最大数20個"), "400" },
-                { LangText("Gald继承", "ガルド引き継ぎ"), "1000" },
-                { LangText("料理继承", "料理引き継ぎ"), "50" },
-                { LangText("料理熟练度继承", "料理熟練度引き継ぎ"), "50" },
-                { LangText("称号继承", "称号引き継ぎ"), "500" },
-                { LangText("人物名鉴继承", "人物名鑑引き継ぎ"), "10" },
-                { LangText("道具图鉴继承", "コレクターブック引き継ぎ"), "10" },
-                { LangText("世界地图继承", "ワールドマップ引き継ぎ"), "10" },
-                { LangText("小游戏数据保持", "ミニゲームデータ保持"), "10" },
-                { LangText("战斗情报继承", "戦闘情報引き継ぎ"), "10" },
-                { LangText("术技继承", "術・技引き継ぎ"), "1000" },
-                { LangText("使用次数继承", "使用回数引き継ぎ"), "100" },
-                { LangText("最大HP增加(+500)", "最大HP増加"), "250" },
-                { LangText("最大HP减少(-150)", "最大HP減少"), "10" },
-                { LangText("连击至上", "コンボ命"), "50" },
-                { LangText("经验值减半", "経験値半分"), "10" },
-                { LangText("经验值2倍", "経験値2倍"), "1000" },
-                { LangText("经验值10倍", "経験値10倍"), "3000" },
-                { LangText("提高取得GRADE", "取得GRADEをあげる"), "100" },
-                { LangText("FS嵌石继承", "FSチャンバー引き継ぎ"), "150" },
-                { LangText("AD技能继承", "ADスキル引き継ぎ"), "900" },
-                { LangText("响律符继承", "キャパシティコア引き継ぎ"), "500" },
-                { LangText("获得Gald2倍", "獲得ガルド2倍"), "600" },
-                { LangText("消耗道具继承", "消費アイテム引き継ぎ"), "500" },
-                { LangText("全剧情概要显示", "全あらすじ表示"), "10" },
-                { LangText("特殊道具继承", "特殊アイテム引き継ぎ"), "10" },
-                { LangText("通关时间输出（游戏未使用）", "クリアタイム出力（未使用）"), "-" }
+                { "OL槽增加(+50%)", "450" },
+                { "游戏时间继承", "10" },
+                { "道具持有上限20个", "400" },
+                { "Gald继承", "1000" },
+                { "料理继承", "50" },
+                { "料理熟练度继承", "50" },
+                { "称号继承", "500" },
+                { "人物名鉴继承", "10" },
+                { "道具图鉴继承", "10" },
+                { "世界地图继承", "10" },
+                { "小游戏数据保持", "10" },
+                { "战斗情报继承", "10" },
+                { "术技继承", "1000" },
+                { "使用次数继承", "100" },
+                { "最大HP增加(+500)", "250" },
+                { "最大HP减少(-150)", "10" },
+                { "连击至上", "50" },
+                { "经验值减半", "10" },
+                { "经验值2倍", "1000" },
+                { "经验值10倍", "3000" },
+                { "提高取得GRADE", "100" },
+                { "FS嵌石继承", "150" },
+                { "AD技能继承", "900" },
+                { "响律符继承", "500" },
+                { "获得Gald2倍", "600" },
+                { "消耗道具继承", "500" },
+                { "全剧情概要显示", "10" },
+                { "特殊道具继承", "10" },
+                { "通关时间输出（游戏未使用）", "-" }
             };
+            this._gradeEffects = gradeEffects;
 
             var grpEffects = new GroupBox();
             grpEffects.Text = LangText("GRADE 商店效果（游戏内购买 100G=商店价×1，购买/退款边界 bit0..27）", "GRADEショップ効果");
@@ -1886,7 +1904,7 @@ namespace TOAHEX
             {
                 var chk = new CheckBox();
                 int col = i % 3, row = i / 3;
-                chk.Text = string.Format("bit{0} {1}({2})", i, gradeEffects[i, 0], gradeEffects[i, 1]);
+                chk.Text = FormatGradeEffect(i);
                 chk.Location = new Point(10 + col * 244, 20 + row * 25);
                 chk.Size = new Size(242, 20);
                 chk.Tag = i;

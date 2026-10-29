@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -172,7 +172,8 @@ namespace TOAHEX
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
 
         // ===== 拖放支持 =====

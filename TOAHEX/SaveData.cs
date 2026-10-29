@@ -101,12 +101,6 @@ namespace TOAHEX
             WriteU32(SaveOffsets.SCRIPT_VARS + SaveOffsets.SCRIPT_VAR_GRADE * 8, grade);
         }
 
-        // 脚本变量类型 tag（u16 @ 条目+4；0x0200=有效 int，其他=未初始化/脚本复用后的垃圾值）
-        public uint ReadScriptVarTag(int index)
-        {
-            return ReadU16(SaveOffsets.SCRIPT_VARS + index * 8 + 4);
-        }
-
         // GRADE 商店效果位图（文件 0xABA8；bit0..27 = 官方 28 项效果，bit28 游戏未用。
         // PS2 经 MapOffset +4 自动落到 0xABAC，两平台共用。证据链见 SaveOffsets.BODY_GRADE_SHOP_FLAGS 注释）
         public uint GradeShopFlags
@@ -215,13 +209,6 @@ namespace TOAHEX
                 if (nb != b) { WriteU8(off, nb); set++; }
             }
             return set;
-        }
-
-        /// <summary>读取日记条目 i 的解锁值（0=锁定，0xFF=全开）。</summary>
-        public byte ReadDiaryEntry(int index)
-        {
-            if (index < 0 || index >= SaveOffsets.DIARY_ENTRY_COUNT) return 0;
-            return ReadU8(SaveOffsets.DIARY_ENTRY_FLAGS + index);
         }
 
         /// <summary>地图全开状态：56 个地图 flag 中已置位的数量。</summary>
@@ -612,7 +599,6 @@ namespace TOAHEX
             _buffer[off] = value;
         }
 
-        public byte ReadByte(int offset) { int off = MapOffset(offset); return _buffer[off]; }
         public void WriteByte(int offset, byte value) { int off = MapOffset(offset); _buffer[off] = value; }
 
         public float ReadFloat(int offset)
@@ -738,20 +724,20 @@ namespace TOAHEX
             WriteFSChamberProgress(charIndex, arteSlot, colorIndex, progress);
         }
 
-        public byte ReadFSChamberMax(int charIndex, int colorIndex)
+        /// <summary>
+        /// 读/写 FS 谱石容量上限 = 该色谱石的道具持有数（0x542 + 122+colorIndex），
+        /// **全局值，不分角色**（旧签名带 charIndex 但内部恒用 1，属废弃参数，已移除）。
+        /// </summary>
+        public byte ReadFSStoneMax(int colorIndex)
         {
-            if (charIndex < 1 || charIndex > 7) return 0;
             if (colorIndex < 0 || colorIndex >= SaveOffsets.FS_CHAMBER_MAX_COUNT) return 0;
-            int off = SaveOffsets.BODY_ITEM_ARRAY + 1 * SaveOffsets.FS_CHAMBER_PER_CHAR + SaveOffsets.FS_CHAMBER_MAX_OFFSET + colorIndex;
-            return ReadU8(off);
+            return ReadU8(SaveOffsets.BODY_ITEM_ARRAY + SaveOffsets.FS_STONE_ITEM_BASE + colorIndex);
         }
 
-        public void WriteFSChamberMax(int charIndex, int colorIndex, byte value)
+        public void WriteFSStoneMax(int colorIndex, byte value)
         {
-            if (charIndex < 1 || charIndex > 7) return;
             if (colorIndex < 0 || colorIndex >= SaveOffsets.FS_CHAMBER_MAX_COUNT) return;
-            int off = SaveOffsets.BODY_ITEM_ARRAY + 1 * SaveOffsets.FS_CHAMBER_PER_CHAR + SaveOffsets.FS_CHAMBER_MAX_OFFSET + colorIndex;
-            WriteU8(off, value);
+            WriteU8(SaveOffsets.BODY_ITEM_ARRAY + SaveOffsets.FS_STONE_ITEM_BASE + colorIndex, value);
         }
 
         public byte ReadCookingMastery(int charIndex, int recipeIndex)
@@ -772,17 +758,6 @@ namespace TOAHEX
         {
             int star = masteryValue / 20;
             return star > 3 ? 3 : star;
-        }
-
-        public void SetCookingMasteryStar(int charIndex, int recipeIndex, int starLevel)
-        {
-            if (starLevel < 0 || starLevel > 3) return;
-            byte value;
-            if (starLevel == 3) value = 60;
-            else if (starLevel == 2) value = 40;
-            else if (starLevel == 1) value = 20;
-            else value = 0;
-            WriteCookingMastery(charIndex, recipeIndex, value);
         }
 
         public uint ReadCookingFlags()
@@ -842,13 +817,6 @@ namespace TOAHEX
             WriteU32(baseOff + SaveOffsets.CHAR_LUCK_TOTAL, total);
         }
 
-        public uint ReadLuckTotal(int charIndex)
-        {
-            int baseOff = GetCharBaseOffset(charIndex);
-            if (baseOff == 0) return 0;
-            return ReadU32(baseOff + SaveOffsets.CHAR_LUCK_TOTAL);
-        }
-
         public ushort ReadOvlGauge(int charIndex)
         {
             int baseOff = GetCharBaseOffset(charIndex);
@@ -865,14 +833,6 @@ namespace TOAHEX
             int headerEntry = FindOvlHeaderEntry(charIndex);
             if (headerEntry >= 0)
                 WriteU32(headerEntry + SaveOffsets.CHAR_OVL_HEADER_GAUGE_OFFSET, value);
-        }
-
-        public ushort ReadOvlGaugeFromHeader(int charIndex)
-        {
-            if (charIndex < 1 || charIndex > 6) return 0;
-            int headerEntry = FindOvlHeaderEntry(charIndex);
-            if (headerEntry < 0) return 0;
-            return (ushort)ReadU32(headerEntry + SaveOffsets.CHAR_OVL_HEADER_GAUGE_OFFSET);
         }
 
         private int FindOvlHeaderEntry(int charIndex)
@@ -928,8 +888,8 @@ namespace TOAHEX
                 byte[] name = ReadBytes(baseOff + SaveOffsets.CHAR_NAME, 16);
                 WriteBytes(entry + 4, name);
                 WriteU8(entry + 20, (byte)(ReadU32(baseOff + SaveOffsets.CHAR_LEVEL) & 0xFF));
-                WriteU32(entry + 24, ReadU32(baseOff + 0x68));  // HP 总值
-                WriteU32(entry + 28, ReadU32(baseOff + 0x6C));  // MP 总值
+                WriteU32(entry + 24, ReadU32(baseOff + SaveOffsets.CHAR_MAXHP_COPY));  // HP 总值
+                WriteU32(entry + 28, ReadU32(baseOff + SaveOffsets.CHAR_MAXTP_COPY));  // MP 总值
                 WriteU32(entry + 32, ReadU32(baseOff + SaveOffsets.CHAR_HP));
                 WriteU32(entry + 36, ReadU32(baseOff + SaveOffsets.CHAR_TP));
                 WriteU32(entry + 40, ReadOvlGauge(roleId));

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -78,18 +78,19 @@ namespace TOAHEX
         {
             switch (slotIndex)
             {
-                case 0: return LanguageConfig.Current == Language.JP ? "武器" : "武器";
-                case 1: return LanguageConfig.Current == Language.JP ? "防具" : "防具";
-                case 2: return LanguageConfig.Current == Language.JP ? "アクセ1" : "饰品1";
-                case 3: return LanguageConfig.Current == Language.JP ? "アクセ2" : "饰品2";
-                case 4: return LanguageConfig.Current == Language.JP ? "響律符" : "响律符";
+                case 0: return Lang.T("武器", "武器");
+                case 1: return Lang.T("防具", "防具");
+                case 2: return Lang.T("饰品1", "アクセ1");
+                case 3: return Lang.T("饰品2", "アクセ2");
+                case 4: return Lang.T("响律符", "響律符");
                 default: return "?";
             }
         }
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
 
         // 构建列表：首项"(无)"(Id=0)；其余按槽位数据源；搜索时"(无)"与当前装备项恒保留

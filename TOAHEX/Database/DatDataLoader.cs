@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +13,8 @@ namespace TOAHEX
             var result = new Dictionary<int, string>();
             foreach (var kv in parsed)
             {
-                if (kv.Value.TryGetValue("ptr2", out var name) && !string.IsNullOrEmpty(name))
+                // _ACS_ 记录：ptr1=技能名，ptr2=说明。旧代码误用 ptr2，导致显示成整段说明。
+                if (kv.Value.TryGetValue("ptr1", out var name) && !string.IsNullOrEmpty(name))
                 {
                     result[kv.Key] = name;
                 }

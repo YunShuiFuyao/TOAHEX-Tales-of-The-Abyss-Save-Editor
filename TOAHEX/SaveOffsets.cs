@@ -266,24 +266,34 @@ namespace TOAHEX
         public const int CHAR_OVL_GAUGE_HEADER_BASE = 0x94;
         public const int CHAR_OVL_HEADER_ENTRY_SIZE = 48;
         public const int CHAR_OVL_HEADER_GAUGE_OFFSET = 40;
-        public const int CHAR_CCORE_PATK_BONUS = 0x94;
+        public const int CHAR_EQUIP_ARRAY = 0x08C;
+        public const int CHAR_EQUIP_SLOT_COUNT = 4;
+        public const int CHAR_EQUIP_SLOT_SIZE = 2;
+        // 0x94 起 5 个 u16 = 各属性槽装備中的 C·コア(響律符) **道具ID**（不是加成数值！）。
+        // 0x94 与 CHAR_KYOURITSUFU 是同一字段（历史命名重复），另 4 个为其他属性槽。
+        // 实测 TOA_000 卢克 0x864=0x0077(119)，落在響律符 ID 段 92-121 内。
+        // ⚠ 不要把这些 ID 当"加成值"读写；C·コア加成由游戏按 ID 查表重算。
+        public const int CHAR_KYOURITSUFU = 0x094;
+        public const int CHAR_CCORE_PATK_BONUS = 0x94;   // = CHAR_KYOURITSUFU（同一字段，PATK 槽）
         public const int CHAR_CCORE_PDEF_BONUS = 0x96;
         public const int CHAR_CCORE_FATK_BONUS = 0x98;
         public const int CHAR_CCORE_FDEF_BONUS = 0x9A;
         public const int CHAR_CCORE_AGI_BONUS = 0x9E;
-        public const int CHAR_EQUIP_ARRAY = 0x08C;
-        public const int CHAR_EQUIP_SLOT_COUNT = 4;
-        public const int CHAR_EQUIP_SLOT_SIZE = 2;
-        public const int CHAR_KYOURITSUFU = 0x094;
         public const int CHAR_GROWTH_POINTS = 0xA0;
+        // FS 谱石进度：每条 12B = [0]=装备色 u8、[+4..+11]=4 色进度 u16（0..100）。
+        // 数组从 0x140 起，每 arte 一条；arte 数由 ArteDatabase 给出（≤24）。
         public const int CHAR_FS_CHAMBER_STONES = 0x140;
         public const int CHAR_FS_CHAMBER_EQUIPPED_TYPE = 0x140;
         public const int CHAR_FS_CHAMBER_COLOR_OFFSET = 4;
         public const int CHAR_FS_CHAMBER_RECORD_SIZE = 12;
         public const int CHAR_FS_CHAMBER_STONE_COUNT = 4;
-        public const int FS_CHAMBER_PER_CHAR = 80;
-        public const int FS_CHAMBER_MAX_OFFSET = 42;
-        public const int FS_CHAMBER_MAX_COUNT = 4;
+        // ===== FS 谱石上限（= 谱石道具的持有数，全局而非每角色）=====
+        // 4 色嵌石在道具表的 ID 为 122(赤)/123(青)/124(緑)/125(黄)（类别 0x23），
+        // 游戏用"持有数量"当上限：消耗谱石提升容量，因此这 4 字节与背包数量表同位。
+        // ⚠ 编辑器的"谱石最大值"与"所有道具全满"写的是同一批字节，必然互相覆盖；
+        //   两者都写 0x542+ID，不是越界也不是重复定义。
+        public const int FS_STONE_ITEM_BASE = 122;   // 赤谱石道具ID，青/緑/黄 = +1/+2/+3
+        public const int FS_CHAMBER_MAX_COUNT = 4;   // 颜色数（赤青緑黄）
         public const int CHAR_ARTE_ARRAY = 0xA4;
         public const int CHAR_ARTE_COUNT = 4;
         public const int CHAR_ARTE_LEARNED_BITMAP = 0xB0;
@@ -345,16 +355,20 @@ namespace TOAHEX
         public const int CHAR_KILL_COUNT = 7;
 
         // 脚本变量区（file 0x2BA1 起 32KB，4096 个 8 字节条目，sub_34ACB4 分配 dword_53A3B8）。
-        // ⚠ 条目布局（2026-10-07 四档+PS2 交叉实测定案）：
-        //   8B 条目内 **[u32 值 @+0] [u16 保留 @+4] [u16 tag=0x0200 @+6]**，
-        //   即 var N 的「值」= SCRIPT_VARS + N*8（+0）；tag 是条目 +4 的 u16。
-        //   旧实现误按 [tag][value] 用 +4 取值 → 读到 tag(0x0200=512)/垃圾，写 +4 还会破坏邻近条目 tag。
-        //   实证：3DS TOA_000..003 的 var271 值 @0x341D = 169；var136 @0x2FE5 = 事件ID。
+        // ⚠ 条目布局（2026-10-07 四档+PS2 实测，2026-10-24 逐字节复核确认）：
+        //     条目 k 起始 = 0x2BA1 + 8k
+        //       +0 u16 type（0x0200=int / 0x0300=float）
+        //       +2 u16 高位（日记全开参考档置 0x3F80 即为"已解锁"标记）
+        //       +4 u32 value  ← SCRIPT_VARS 就是"+4"这个值的基址
+        //   实证：var136 条目 @0x2FE1 = 00 02 00 00 20 A2 3D 00 → type=0x0200, value=4039200 ✓
+        //         var271 条目 @0x3419 = 00 02 00 00 A9 00 00 00 → value=169 ✓
+        //   历史坑：曾把条目理解成 [u32 值][u16 保留][u16 tag]，据此用 "+4" 读值会读到
+        //   相邻条目的 type(0x0200)，写 "+4" 还会破坏下一条目 type —— 值在 +4、type 在 +0。
         // 赌场实测：
         //   var#271 = 赌场筹码（游戏内赌场菜单显示的持有数）
         //   var#773 = 赌场 Grade 余额缓存（源头是 file 0xABA4 定点数；兑换只扣此变量，0xB080/0xB088 不变）
         //   var#774 = 兑换相关计数器（语义未完全确认，只读展示）
-        public const int SCRIPT_VARS = 0x2BA5;  // var N 的「值」字段基址（条目 tag 起于 0x2BA1）
+        public const int SCRIPT_VARS = 0x2BA5;  // var N 的「值」字段基址（= 条目 +4；条目 type 起于 0x2BA1）
         public const int SCRIPT_VAR_CHIPS = 271;
         public const int SCRIPT_VAR_GRADE = 773;
         public const int SCRIPT_VAR_EXCHANGE = 774;

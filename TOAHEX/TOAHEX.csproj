@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -50,6 +50,7 @@
     <Compile Include="TblCodec.cs" />
     <Compile Include="ItemData.cs" />
     <Compile Include="LanguageConfig.cs" />
+    <Compile Include="Lang.cs" />
 
     <!-- 数据层：Database/ -->
     <Compile Include="Database\DatDataLoader.cs" />
@@ -94,4 +95,13 @@
     <EmbeddedResource Include="Resources\3ds_template.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <!-- 构建后把词典复制到 exe 同级目录（程序优先读取 BaseDirectory\Dictory） -->
+  <Target Name="CopyDictory" AfterTargets="Build">
+    <ItemGroup>
+      <_DictFiles Include="$(MSBuildProjectDirectory)\..\Dictory\*.txt" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_DictFiles)" DestinationFolder="$(OutDir)Dictory" SkipUnchangedFiles="true" />
+    <Message Text="词典已复制到 $(OutDir)Dictory" Importance="high" />
+  </Target>
 </Project>

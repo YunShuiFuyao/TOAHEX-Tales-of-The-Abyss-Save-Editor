@@ -7,6 +7,7 @@ namespace TOAHEX
     public static class ArteDatabase
     {
         private static Dictionary<int, string> _datNames;
+        private static Dictionary<int, string> _datEn;
 
         public static void LoadFromDat(string filePath)
         {
@@ -23,6 +24,12 @@ namespace TOAHEX
                     }
                 }
             }
+        }
+
+        /// <summary>加载英版 _SP_.DAT 导出的术技名。</summary>
+        public static void LoadFromDatEn(string filePath)
+        {
+            _datEn = DatDataLoader.LoadSpData(filePath);
         }
 
         private static readonly Lazy<Dictionary<int, (string jp, string cn)>> _data =
@@ -292,7 +299,8 @@ namespace TOAHEX
                     {
                         if (_datNames.TryGetValue(id, out var datName) && !string.IsNullOrEmpty(datName))
                         {
-                            d[id] = (datName, d[id].cn);
+                            // DAT 为汉化版 → 只覆盖中文名，日文名保持硬编码原值
+                            d[id] = (d[id].jp, datName);
                         }
                     }
                 }
@@ -307,9 +315,22 @@ namespace TOAHEX
 
         public static string GetName(int id)
         {
-            return _data.Value.TryGetValue(id, out var entry)
-                ? (LanguageConfig.Current == Language.JP ? entry.jp : entry.cn)
-                : "???";
+            if (!_data.Value.TryGetValue(id, out var entry)) return "???";
+            string name;
+            if (LanguageConfig.Current == Language.EN)
+                name = (_datEn != null && _datEn.TryGetValue(id, out var en) && !string.IsNullOrEmpty(en)) ? en : entry.jp;
+            else
+                name = LanguageConfig.Current == Language.JP ? entry.jp : entry.cn;
+            return LocalizePlaceholder(name);
+        }
+
+        /// <summary>游戏里的占位名（未設定/ダミー）按语言显示，避免英文界面出现日文假名。</summary>
+        private static string LocalizePlaceholder(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            if (name == "未設定" || name == "未设定") return Lang.T("未設定", "未設定");
+            if (name == "ダミー" || name == "替身") return Lang.T("ダミー", "ダミー");
+            return name;
         }
 
         private static readonly int[][] _charArteIds = new int[][]
@@ -364,7 +385,8 @@ namespace TOAHEX
             if (string.IsNullOrEmpty(keyword)) return GetAll();
             var kw = keyword.ToLowerInvariant();
             return _data.Value
-                .Where(kv => kv.Value.jp.ToLowerInvariant().Contains(kw) || kv.Value.cn.ToLowerInvariant().Contains(kw))
+                .Where(kv => kv.Value.jp.ToLowerInvariant().Contains(kw) || kv.Value.cn.ToLowerInvariant().Contains(kw)
+                          || (_datEn != null && _datEn.TryGetValue(kv.Key, out var en) && en != null && en.ToLowerInvariant().Contains(kw)))
                 .Select(kv => (kv.Key, kv.Value.jp, kv.Value.cn))
                 .ToList();
         }

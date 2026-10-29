@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -109,17 +109,27 @@ namespace TOAHEX
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
 
         private void BuildArteTable(string keyword)
         {
             try
             {
+                bool en = LanguageConfig.Current == Language.EN;
+                string colName = LangText("名称", "名称");
                 var table = new DataTable();
                 table.Columns.Add("ID", typeof(int));
-                table.Columns.Add(LangText("日文名", "日本語名"), typeof(string));
-                table.Columns.Add(LangText("中文名", "中国語名"), typeof(string));
+                if (en)
+                {
+                    table.Columns.Add(colName, typeof(string));
+                }
+                else
+                {
+                    table.Columns.Add(LangText("日文名", "日本語名"), typeof(string));
+                    table.Columns.Add(LangText("中文名", "中国語名"), typeof(string));
+                }
 
                 if (_charIndex > 0)
                 {
@@ -127,11 +137,14 @@ namespace TOAHEX
                     foreach (var arteId in arteIds)
                     {
                         var entry = ArteDatabase.GetById(arteId);
+                        string enName = ArteDatabase.GetName(arteId);
                         if (string.IsNullOrEmpty(keyword) ||
                             entry.jp.ToLowerInvariant().Contains(keyword.ToLowerInvariant()) ||
-                            entry.cn.ToLowerInvariant().Contains(keyword.ToLowerInvariant()))
+                            entry.cn.ToLowerInvariant().Contains(keyword.ToLowerInvariant()) ||
+                            (enName != null && enName.ToLowerInvariant().Contains(keyword.ToLowerInvariant())))
                         {
-                            table.Rows.Add(arteId, entry.jp, entry.cn);
+                            if (en) table.Rows.Add(arteId, enName);
+                            else table.Rows.Add(arteId, entry.jp, entry.cn);
                         }
                     }
                 }
@@ -141,7 +154,10 @@ namespace TOAHEX
                     if (artes != null)
                     {
                         foreach (var a in artes)
-                            table.Rows.Add(a.id, a.jp, a.cn);
+                        {
+                            if (en) table.Rows.Add(a.id, ArteDatabase.GetName(a.id));
+                            else table.Rows.Add(a.id, a.jp, a.cn);
+                        }
                     }
                 }
 
@@ -151,6 +167,8 @@ namespace TOAHEX
                     dgvArtes.Columns["ID"].Width = 50;
                     string colJp = LangText("日文名", "日本語名");
                     string colCn = LangText("中文名", "中国語名");
+                    if (dgvArtes.Columns.Contains(colName))
+                        dgvArtes.Columns[colName].Width = 400;
                     if (dgvArtes.Columns.Contains(colJp))
                         dgvArtes.Columns[colJp].Width = 200;
                     if (dgvArtes.Columns.Contains(colCn))

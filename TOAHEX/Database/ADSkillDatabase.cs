@@ -7,6 +7,7 @@ namespace TOAHEX
     public static class ADSkillDatabase
     {
         private static Dictionary<int, string> _datNames;
+        private static Dictionary<int, string> _datEn;
 
         public static void LoadFromDat(string filePath)
         {
@@ -23,6 +24,12 @@ namespace TOAHEX
                     }
                 }
             }
+        }
+
+        /// <summary>加载英版 DAT 导出的名称（界面语言=EN 时使用）。</summary>
+        public static void LoadFromDatEn(string filePath)
+        {
+            _datEn = DatDataLoader.LoadAcsData(filePath);
         }
 
         private static readonly Lazy<Dictionary<int, (string jp, string cn)>> _data =
@@ -125,7 +132,8 @@ namespace TOAHEX
                     {
                         if (_datNames.TryGetValue(id, out var datName) && !string.IsNullOrEmpty(datName))
                         {
-                            d[id] = (datName, d[id].cn);
+                            // DAT 为汉化版 → 只覆盖中文名，日文名保持硬编码原值
+                            d[id] = (d[id].jp, datName);
                         }
                     }
                 }
@@ -140,9 +148,15 @@ namespace TOAHEX
 
         public static string GetName(int id)
         {
-            return _data.Value.TryGetValue(id, out var entry)
-                ? (LanguageConfig.Current == Language.JP ? entry.jp : entry.cn)
-                : "???";
+            if (id == 0) return Lang.T("无", "無し");   // 无技能
+            if (!_data.Value.TryGetValue(id, out var entry)) return "???";
+            if (LanguageConfig.Current == Language.EN)
+            {
+                if (_datEn != null && _datEn.TryGetValue(id, out var en) && !string.IsNullOrEmpty(en))
+                    return en;
+                return entry.jp;
+            }
+            return LanguageConfig.Current == Language.JP ? entry.jp : entry.cn;
         }
 
         public static List<(int id, string jp, string cn)> GetAll()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -92,7 +92,7 @@ namespace TOAHEX
             {
                 // 全部地图，按 ID 升序；重复名保留（同名多层地图）
                 foreach (var kv in StoryJumpDatabase.GetAllMaps().OrderBy(x => x.Key))
-                    _rows.Add(new object[] { kv.Key, kv.Value, LangText("地图表", "maptable") });
+                    _rows.Add(new object[] { kv.Key, Lang.TContent(kv.Value), LangText("地图表", "maptable") });
             }
             else
             {
@@ -104,13 +104,13 @@ namespace TOAHEX
                 // （StoryJumpDatabase.EventIdToChapter：先与主线条目精确匹配，再按 ID 公式回推）。
                 var all = new List<Tuple<int, uint, object[]>>();
                 foreach (var kv in StoryJumpDatabase.GetAllJumpEntries())
-                    all.Add(Tuple.Create(kv.Key, kv.Value.event_id, new object[] { kv.Value.event_id, kv.Value.menu_name,
+                    all.Add(Tuple.Create(kv.Key, kv.Value.event_id, new object[] { kv.Value.event_id, kv.Value.DisplayName,
                         string.Format(LangText("第{0}章", "{0}章"), kv.Key) }));
                 foreach (int pg in SideQuestJumpDatabase.GetPages())
                     foreach (var ent in SideQuestJumpDatabase.GetEntries(pg))
                         if (ent.event_id > 0)
                             all.Add(Tuple.Create((int)StoryJumpDatabase.EventIdToChapter(ent.event_id), ent.event_id,
-                                new object[] { ent.event_id, ent.name,
+                                new object[] { ent.event_id, ent.DisplayName,
                                     string.Format(LangText("支线{0}页", "サブ{0}P"), pg) }));
 
                 foreach (var t in all.OrderBy(x => x.Item1).ThenBy(x => x.Item2))
@@ -161,7 +161,8 @@ namespace TOAHEX
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
     }
 }

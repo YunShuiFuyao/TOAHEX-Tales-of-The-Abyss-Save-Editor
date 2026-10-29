@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace TOAHEX
@@ -125,9 +125,11 @@ namespace TOAHEX
         {
             if (slotIndex < 1 || slotIndex > 7 || saveIndex < 1 || saveIndex > _counts[slotIndex])
                 return "???";
-            return LanguageConfig.Current == Language.JP
-                ? _titlesJp[slotIndex][saveIndex - 1]
-                : _titlesCn[slotIndex][saveIndex - 1];
+            if (LanguageConfig.Current == Language.JP)
+                return _titlesJp[slotIndex][saveIndex - 1];
+            if (LanguageConfig.Current == Language.EN)
+                return Lang.TContent(_titlesCn[slotIndex][saveIndex - 1]);
+            return _titlesCn[slotIndex][saveIndex - 1];
         }
 
         public static int GetTitleCount(int slotIndex)

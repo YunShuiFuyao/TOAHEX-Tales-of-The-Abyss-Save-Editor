@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +11,19 @@ namespace TOAHEX
             public int Id { get; }
             public string JpName { get; }
             public string CnName { get; }
-            public string Name => LanguageConfig.Current == Language.JP ? JpName : CnName;
+            public string Name
+            {
+                get
+                {
+                    if (LanguageConfig.Current == Language.EN)
+                    {
+                        var item = ItemDatabase.GetById(Id);
+                        if (item != null && !string.IsNullOrEmpty(item.EnName)) return item.EnName;
+                        return JpName;
+                    }
+                    return LanguageConfig.Current == Language.JP ? JpName : CnName;
+                }
+            }
 
             public KyouritsufuData(int id, string jpName, string cnName)
             {

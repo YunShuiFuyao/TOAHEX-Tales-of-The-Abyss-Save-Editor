@@ -9,6 +9,7 @@ namespace TOAHEX
         private static readonly Dictionary<int, ItemData> _items = new Dictionary<int, ItemData>();
         private static bool _initialized = false;
         private static Dictionary<int, string> _datNames;
+        private static Dictionary<int, string> _datNamesEn;
         private static Dictionary<int, Dictionary<string, string>> _datFullData;
         private static List<string> _datCategoryNames;
 
@@ -30,6 +31,33 @@ namespace TOAHEX
                         _items[kv.Key] = newItem;
                     }
                 }
+            }
+        }
+
+        /// <summary>加载英版 _I_.DAT 导出的道具名（界面语言=EN 时使用）。</summary>
+        public static void LoadFromDatEn(string filePath)
+        {
+            _datNamesEn = DatDataLoader.LoadItemData(filePath);
+            ApplyEnNames();
+        }
+
+        // 英版 DAT 里仍是日文的少数条目（官方未翻译），按含义补英文名
+        private static readonly Dictionary<string, string> _enNameFix = new Dictionary<string, string>
+        {
+            { "モンスターブック", "Monster Book" },
+            { "チャネリング", "Channeling" },
+            { "幻想の音盤", "Phantom Record" },
+            { "漆黒の翼の予告状", "Dark Wings' Notice" },
+        };
+
+        private static void ApplyEnNames()
+        {
+            if (_datNamesEn == null) return;
+            foreach (var kv in _datNamesEn)
+            {
+                if (!_items.TryGetValue(kv.Key, out var item) || string.IsNullOrEmpty(kv.Value))
+                    continue;
+                item.EnName = _enNameFix.TryGetValue(kv.Value, out var fixedName) ? fixedName : kv.Value;
             }
         }
 
@@ -80,12 +108,14 @@ namespace TOAHEX
                         string cnName = item.CnName;
                         if (_datNames.TryGetValue(kv.Key, out var datName) && !string.IsNullOrEmpty(datName))
                         {
-                            jpName = datName;
-                            if (!_cnNameMap.TryGetValue(datName, out cnName))
-                                cnName = datName;
+                            // DAT 为汉化版 → 只更新中文名，日文名保持硬编码原值
+                            cnName = _cnNameMap.TryGetValue(datName, out var mapped) ? mapped : datName;
                         }
 
-                        var newItem = new ItemData(kv.Key, jpName, cnName, item.TypeCode, item.TypeName, category, subCategory);
+                        var newItem = new ItemData(kv.Key, jpName, cnName, item.TypeCode, item.TypeName, category, subCategory)
+                        {
+                            EnName = item.EnName
+                        };
                         _items[kv.Key] = newItem;
                     }
                 }
@@ -95,6 +125,7 @@ namespace TOAHEX
             {
                 _datCategoryNames = null;
             }
+            ApplyEnNames();
         }
 
         public static IReadOnlyDictionary<int, ItemData> Items
@@ -223,6 +254,7 @@ namespace TOAHEX
             if (_initialized) return;
             _initialized = true;
             InitItems();
+            ApplyEnNames();
         }
 
         private static void InitItems()

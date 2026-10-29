@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -57,21 +57,34 @@ namespace TOAHEX
 
         private string LangText(string cn, string jp)
         {
-            return LanguageConfig.Current == Language.JP ? jp : cn;
+            // 统一走词典：Dictory/ 下按语言加载，缺失时回退 jp / 中文原文
+            return Lang.T(cn, jp);
         }
 
         private void BuildTitleTable()
         {
             try
             {
+                bool en = LanguageConfig.Current == Language.EN;
+                string colName = LangText("名称", "名称");
                 var table = new DataTable();
                 table.Columns.Add(LangText("索引", "索引"), typeof(int));
-                table.Columns.Add(LangText("日文名", "日本語名"), typeof(string));
-                table.Columns.Add(LangText("中文名", "中国語名"), typeof(string));
+                if (en)
+                {
+                    table.Columns.Add(colName, typeof(string));
+                }
+                else
+                {
+                    table.Columns.Add(LangText("日文名", "日本語名"), typeof(string));
+                    table.Columns.Add(LangText("中文名", "中国語名"), typeof(string));
+                }
 
                 var titles = TitleDatabase.GetAllTitles(_charSlotIndex);
                 foreach (var t in titles)
-                    table.Rows.Add(t.Index, t.Jp, t.Cn);
+                {
+                    if (en) table.Rows.Add(t.Index, Lang.TContent(t.Cn));
+                    else table.Rows.Add(t.Index, t.Jp, t.Cn);
+                }
 
                 dgvTitles.DataSource = table;
                 if (dgvTitles.Columns.Count > 0)
@@ -81,6 +94,8 @@ namespace TOAHEX
                     string colCn = LangText("中文名", "中国語名");
                     if (dgvTitles.Columns.Contains(colIdx))
                         dgvTitles.Columns[colIdx].Width = 50;
+                    if (dgvTitles.Columns.Contains(colName))
+                        dgvTitles.Columns[colName].Width = 400;
                     if (dgvTitles.Columns.Contains(colJp))
                         dgvTitles.Columns[colJp].Width = 200;
                     if (dgvTitles.Columns.Contains(colCn))
